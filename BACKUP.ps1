@@ -12,16 +12,24 @@ Function Read-FolderBrowserDialog([string]$InitialDirectory, [string]$Descriptio
     }
 }
 
-
+#find filenames
 $sourceRoot = Read-FolderBrowserDialog -InitialDirectory "Desktop" -Description "Select directory beeing backed up."
 $destinationRoot = Read-FolderBrowserDialog -InitialDirectory $sourceRoot -Description "Select directory for saving the backup."
 
 $dateStr = Get-Date -UFormat "%Y%m%d-%H%M"
  
-$destinationRoot += (Get-Item $sourceRoot).BaseName + "@" + $dateStr
+$destinationRoot += "\" +(Get-Item $sourceRoot).BaseName + "@" + $dateStr
 
+new-item $destinationRoot -itemtype directory | Out-Null
 
-new-item $destinationRoot -itemtype directory
-Copy-Item -Path $sourceRoot -Recurse -Destination $destinationRoot -Container
+#compress items
+Compress-Archive -Path $sourceRoot -DestinationPath $destinationRoot
 
-icacls $sourceRoot /save $destinationRoot"\.acls" /T
+# add acls
+$tmpacls = $env:TEMP + "\acls"
+
+icacls $sourceRoot /save $tmpacls /T
+
+Compress-Archive -Path $tmpacls -Update -DestinationPath $destinationRoot
+
+Remove-Item $tmpacls
