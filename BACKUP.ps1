@@ -20,8 +20,6 @@ $dateStr = Get-Date -UFormat "%Y%m%d-%H%M"
  
 $destinationRoot += "\" +(Get-Item $sourceRoot).BaseName + "@" + $dateStr
 
-new-item $destinationRoot -itemtype directory | Out-Null
-
 #compress items
 Compress-Archive -Path $sourceRoot -DestinationPath $destinationRoot
 
