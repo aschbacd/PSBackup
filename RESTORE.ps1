@@ -1,5 +1,24 @@
-$sourceRoot = "E:\Backup"         # folder that holds backup - no backslash on the end of path
-$destinationRoot = "\\server\restore"    # folder to restore into - no backslash on the end of path
+. .\lib\OpenFolderDialog.ps1
 
-Copy-Item -Path $sourceRoot"\Backup\*" -Recurse -Destination $destinationRoot -Container
-icacls $destinationRoot /restore $sourceRoot"\ACL"
+Function Get-FileName([string]$InitialDirectory)
+{
+    [System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms") | Out-Null
+    
+    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $OpenFileDialog.initialDirectory = $InitialDirectory
+    $OpenFileDialog.filter = "ZIP (*.zip)| *.zip"
+    $OpenFileDialog.ShowDialog() | Out-Null
+
+    return $OpenFileDialog.FileName
+}
+
+$sourceRoot = Get-FileName -InitialDirectory "Desktop"
+$destinationRoot = Read-FolderBrowserDialog -InitialDirectory $sourceRoot -Description "Select directory for restoring the backup."
+
+Expand-Archive -Path $sourceRoot -DestinationPath $destinationRoot
+
+$basename = (Get-Item $sourceRoot).BaseName.split('@')[0]
+
+icacls $destinationRoot  /restore $destinationRoot"\acls"
+
+Remove-Item $destinationRoot"\acls"
