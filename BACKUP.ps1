@@ -1,6 +1,21 @@
-$sourceRoot = "\\server\share"         # folder to be backed up - no backslash on the end of path
-$destinationRoot = "E:\Backup"    # folder that holds backup - no backslash on the end of path
+. .\lib\OpenFolderDialog.ps1
 
-new-item $destinationRoot"\Backup" -itemtype directory
-Copy-Item -Path $sourceRoot"\*" -Recurse -Destination $destinationRoot"\Backup" -Container
-icacls $sourceRoot"\*" /save $destinationRoot"\ACL" /T
+#find filenames
+$sourceRoot = Read-FolderBrowserDialog -InitialDirectory "Desktop" -Description "Select directory beeing backed up."
+$destinationRoot = Read-FolderBrowserDialog -InitialDirectory $sourceRoot -Description "Select directory for saving the backup."
+
+$dateStr = Get-Date -UFormat "%Y%m%d-%H%M"
+ 
+$destinationRoot += "\" +(Get-Item $sourceRoot).BaseName + "@" + $dateStr
+
+#compress items
+Compress-Archive -Path $sourceRoot -DestinationPath $destinationRoot
+
+# add acls
+$tmpacls = $env:TEMP + "\acls"
+
+icacls $sourceRoot /save $tmpacls /T
+
+Compress-Archive -Path $tmpacls -Update -DestinationPath $destinationRoot
+
+Remove-Item $tmpacls

@@ -1,5 +1,11 @@
-# POWERSHELL BACKUP
-Edit the powershell scripts first before running them -> path must be changed!
+# PowerShell Backup
 
-Unfortunately the first layer of your restored folder structure can't be permitted correctly,
-so make sure that you manually set permissions afterwards.
+These scripts provide easy backup and restore utilities. The permission get backed up too, so do not worry about this. Furthermore ZIP-Compression is included.
+
+## Usage
+
+Just call the powershell scripts and follow the instructions provided.
+
+## Dependencies
+
+* PowerShell version 5.0 or higher
